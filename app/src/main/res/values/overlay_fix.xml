@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Catch-all: если где-то осталось @style/ThemeOverlay, сборка не упадёт -->
+    <!-- Вариант А (под твой стек MaterialComponents): -->
+    <style name="ThemeOverlay" parent="ThemeOverlay.MaterialComponents"/>
+
+    <!-- Если вдруг ругнётся на parent (редко), используй пустой стиль:
+    <style name="ThemeOverlay"/>
+    -->
+</resources>
