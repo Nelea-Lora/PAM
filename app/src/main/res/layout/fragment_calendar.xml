@@ -5,17 +5,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.calendar.CalendarFragment" >
+    tools:context=".ui.calendar.CalendarFragment">
 
     <LinearLayout
-        android:orientation="vertical" android:padding="16dp"
-        android:layout_width="match_parent" android:layout_height="match_parent">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <CalendarView
+        <!-- Календарь -->
+        <com.kizitonwose.calendar.view.CalendarView
             android:id="@+id/calendarView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="308dp"
+            app:cv_dayViewResource="@layout/item_calendar_day"
+            app:cv_monthHeaderResource="@layout/item_month_header" />
 
+        <!-- Список событий для выбранной даты -->
         <ListView
             android:id="@+id/listEvents"
             android:layout_width="match_parent"
@@ -23,21 +29,34 @@
             android:layout_weight="1"
             android:choiceMode="singleChoice" />
 
+        <!-- Кнопки управления -->
         <LinearLayout
             android:orientation="horizontal"
             android:gravity="end"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <Button android:id="@+id/btnAdd" android:text="Add"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
-            <Button android:id="@+id/btnUpdate" android:text="Update"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
+            <Button
+                android:id="@+id/btnAdd"
+                android:text="Add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btnUpdate"
+                android:text="Update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp" />
-            <Button android:id="@+id/btnRemove" android:text="Remove"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
+
+            <Button
+                android:id="@+id/btnRemove"
+                android:text="Remove"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp" />
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
