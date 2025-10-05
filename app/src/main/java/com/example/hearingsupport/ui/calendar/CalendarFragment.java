@@ -35,9 +35,13 @@ public class CalendarFragment extends Fragment {
     private static final String EXTRA_SELECTED_DATE_UTC = "extra_selected_date_utc";
     private CalendarView calendarView;
     private ListView listEvents;
-    private Button btnAdd, btnUpdate;
+    private Button btnAdd, btnUpdate, btnRemove;
     private long selectedDateUtcMillis;
     private LocalDate selectedDate = LocalDate.now();
+    private ArrayAdapter<String> eventsAdapter;
+    private List<Event> dayEvents = new ArrayList<>();
+    private int selectedEventPos = ListView.INVALID_POSITION;
+
 
 //    public CalendarFragment() {
 //        // Required empty public constructor
@@ -63,6 +67,7 @@ public class CalendarFragment extends Fragment {
         listEvents   = view.findViewById(R.id.listEvents);
         btnAdd       = view.findViewById(R.id.btnAdd);
         btnUpdate    = view.findViewById(R.id.btnUpdate);
+        btnRemove    = view.findViewById(R.id.btnRemove);
 
         // 1) Настраиваем диапазон календаря
         YearMonth currentMonth = YearMonth.now();
@@ -72,6 +77,15 @@ public class CalendarFragment extends Fragment {
 
         calendarView.setup(startMonth, endMonth, firstDayOfWeek);
         calendarView.scrollToMonth(currentMonth);
+        eventsAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_list_item_single_choice);
+        listEvents.setAdapter(eventsAdapter);
+        listEvents.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        listEvents.setOnItemClickListener((parent, view1, position, id) -> {
+            selectedEventPos = position;
+        });
+
 
         calendarView.setDayBinder(new MonthDayBinder<DayViewContainer>() {
             @NonNull
@@ -92,8 +106,7 @@ public class CalendarFragment extends Fragment {
                         selectedDateUtcMillis = selectedDate.atStartOfDay(ZoneOffset.UTC)
                                 .toInstant().toEpochMilli();
 
-                        // сюда можно подгрузить события за выбранный день
-                        // reloadEventsFor(selectedDateUtcMillis);
+                        reloadEventsFor(selectedDate);
                     }
                 });
                 return container;
@@ -142,44 +155,23 @@ public class CalendarFragment extends Fragment {
         });
 
         btnUpdate.setOnClickListener(v -> {
-            // Преобразуем дату из selectedDateUtcMillis в LocalDate
-            LocalDate selectedDate = Instant.ofEpochMilli(selectedDateUtcMillis)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate();
-
-            // Загружаем все события и фильтруем по выбранной дате
-            List<Event> allEvents = EventsXmlStore.getAll(requireContext());
-            List<Event> dayEvents = new ArrayList<>();
-            for (Event e : allEvents) {
-                if (e.getDate().isEqual(selectedDate)) {
-                    dayEvents.add(e);
-                }
-            }
-
-            if (dayEvents.isEmpty()) {
-                Toast.makeText(requireContext(), "На выбранную дату нет событий", Toast.LENGTH_SHORT).show();
+            if (selectedEventPos == ListView.INVALID_POSITION) {
+                Toast.makeText(requireContext(), "Выберите событие из списка", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Формируем список для отображения
-            String[] titles = new String[dayEvents.size()];
-            for (int i = 0; i < dayEvents.size(); i++) {
-                Event e = dayEvents.get(i);
-                titles[i] = e.getTitle() +
-                        (e.getInfo() != null && !e.getInfo().isEmpty() ? " — " + e.getInfo() : "");
+            Event selected = dayEvents.get(selectedEventPos);
+            Intent i = new Intent(requireContext(), UpdateEventActivity.class);
+            i.putExtra(UpdateEventActivity.EXTRA_EVENT_ID, selected.getId());
+            startActivity(i);
+        });
+
+        btnRemove.setOnClickListener(v -> {
+            if (selectedEventPos == ListView.INVALID_POSITION) {
+                Toast.makeText(requireContext(), "Выберите событие из списка", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            // Показываем диалог выбора события
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Выберите событие для изменения")
-                    .setItems(titles, (dialog, which) -> {
-                        Event selected = dayEvents.get(which);
-                        Intent i = new Intent(requireContext(), UpdateEventActivity.class);
-                        i.putExtra(UpdateEventActivity.EXTRA_EVENT_ID, selected.getId());
-                        startActivity(i);
-                    })
-                    .setNegativeButton("Отмена", null)
-                    .show();
         });
     }
     // Вспомогательный контейнер для заголовка месяца
@@ -190,4 +182,32 @@ public class CalendarFragment extends Fragment {
             title = view.findViewById(R.id.monthText);
         }
     }
+    private void reloadEventsFor(LocalDate date) {
+        dayEvents.clear();
+        List<Event> allEvents = EventsXmlStore.getAll(requireContext());
+        for (Event e : allEvents) {
+            if (e.getDate().isEqual(date)) {
+                dayEvents.add(e);
+            }
+        }
+
+        List<String> titles = new ArrayList<>();
+        for (Event e : dayEvents) {
+            titles.add(e.getTitle() +
+                    (e.getInfo() != null && !e.getInfo().isEmpty() ? " — " + e.getInfo() : ""));
+        }
+
+        eventsAdapter.clear();
+        eventsAdapter.addAll(titles);
+        eventsAdapter.notifyDataSetChanged();
+
+        selectedEventPos = ListView.INVALID_POSITION;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadEventsFor(selectedDate);
+    }
+
 }
