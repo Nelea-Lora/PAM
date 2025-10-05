@@ -81,6 +81,10 @@ public class CalendarFragment extends Fragment {
                 android.R.layout.simple_list_item_single_choice);
         listEvents.setAdapter(eventsAdapter);
         listEvents.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        listEvents.clearChoices();
+        listEvents.requestLayout();
+        selectedEventPos = ListView.INVALID_POSITION;
+
 
         listEvents.setOnItemClickListener((parent, view1, position, id) -> {
             selectedEventPos = position;
@@ -172,6 +176,22 @@ public class CalendarFragment extends Fragment {
                 return;
             }
 
+            Event selected = dayEvents.get(selectedEventPos);
+
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Удалить событие?")
+                    .setMessage("Удалить \"" + selected.getTitle() + "\"?")
+                    .setPositiveButton("Да", (dialog, which) -> {
+                        boolean ok = EventsXmlStore.delete(requireContext(), selected.getId());
+                        if (ok) {
+                            Toast.makeText(requireContext(), "Событие удалено", Toast.LENGTH_SHORT).show();
+                            reloadEventsFor(selectedDate);
+                        } else {
+                            Toast.makeText(requireContext(), "Ошибка при удалении", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Отмена", null)
+                    .show();
         });
     }
     // Вспомогательный контейнер для заголовка месяца
@@ -200,6 +220,8 @@ public class CalendarFragment extends Fragment {
         eventsAdapter.clear();
         eventsAdapter.addAll(titles);
         eventsAdapter.notifyDataSetChanged();
+        listEvents.clearChoices();
+        listEvents.requestLayout();
 
         selectedEventPos = ListView.INVALID_POSITION;
     }

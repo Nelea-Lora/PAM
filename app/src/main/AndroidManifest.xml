@@ -33,8 +33,10 @@
         <receiver
             android:name=".NotificationReceiver"
             android:exported="false" />
-        <activity android:name=".ui.calendar.AddEventActivity" />
-        <activity android:name=".ui.calendar.UpdateEventActivity" />
+        <activity android:name=".ui.calendar.AddEventActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
+        <activity android:name=".ui.calendar.UpdateEventActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
     </application>
 
 </manifest>

@@ -128,5 +128,18 @@ public class EventsXmlStore {
         }
     }
 
+    public static boolean delete(Context context, String id) {
+        try {
+            List<Event> events = getAll(context);
+            boolean removed = events.removeIf(e -> e.getId().equals(id));
+            if (removed) {
+                saveAll(context, events);
+            }
+            return removed;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
