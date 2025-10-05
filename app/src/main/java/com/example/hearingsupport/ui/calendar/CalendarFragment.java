@@ -18,11 +18,15 @@ import com.kizitonwose.calendar.core.DayPosition;
 
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.TextStyle;
 import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -138,15 +142,44 @@ public class CalendarFragment extends Fragment {
         });
 
         btnUpdate.setOnClickListener(v -> {
-//            int pos = listEvents.getCheckedItemPosition();
-//                    if (pos != ListView.INVALID_POSITION) {
-//                        Event e = adapter.getItem(pos);
-//                        Intent i = new Intent(requireContext(), UpdateEventActivity.class);
-//                        i.putExtra(UpdateEventActivity.EXTRA_EVENT_ID, e.getId());
-//                        startActivity(i);
-//                    } else {
-//                        Toast.makeText(requireContext(), "Выберите событие", Toast.LENGTH_SHORT).show();
-//                    }
+            // Преобразуем дату из selectedDateUtcMillis в LocalDate
+            LocalDate selectedDate = Instant.ofEpochMilli(selectedDateUtcMillis)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+
+            // Загружаем все события и фильтруем по выбранной дате
+            List<Event> allEvents = EventsXmlStore.getAll(requireContext());
+            List<Event> dayEvents = new ArrayList<>();
+            for (Event e : allEvents) {
+                if (e.getDate().isEqual(selectedDate)) {
+                    dayEvents.add(e);
+                }
+            }
+
+            if (dayEvents.isEmpty()) {
+                Toast.makeText(requireContext(), "На выбранную дату нет событий", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Формируем список для отображения
+            String[] titles = new String[dayEvents.size()];
+            for (int i = 0; i < dayEvents.size(); i++) {
+                Event e = dayEvents.get(i);
+                titles[i] = e.getTitle() +
+                        (e.getInfo() != null && !e.getInfo().isEmpty() ? " — " + e.getInfo() : "");
+            }
+
+            // Показываем диалог выбора события
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Выберите событие для изменения")
+                    .setItems(titles, (dialog, which) -> {
+                        Event selected = dayEvents.get(which);
+                        Intent i = new Intent(requireContext(), UpdateEventActivity.class);
+                        i.putExtra(UpdateEventActivity.EXTRA_EVENT_ID, selected.getId());
+                        startActivity(i);
+                    })
+                    .setNegativeButton("Отмена", null)
+                    .show();
         });
     }
     // Вспомогательный контейнер для заголовка месяца
