@@ -95,8 +95,37 @@ public class EventsXmlStore {
         transformer.transform(new DOMSource(doc), new StreamResult(new FileOutputStream(getFile(context))));
     }
 
-    // Создать событие с новым UUID
     public static Event createNew(LocalDate date, String title, String info) {
         return new Event(UUID.randomUUID().toString(), date, title, info);
     }
+
+    // Получить событие по ID
+    public static Event getById(Context context, String id) {
+        List<Event> events = getAll(context);
+        for (Event e : events) {
+            if (e.getId().equals(id)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    // Обновить событие
+    public static boolean update(Context context, Event updated) {
+        try {
+            List<Event> events = getAll(context);
+            for (int i = 0; i < events.size(); i++) {
+                if (events.get(i).getId().equals(updated.getId())) {
+                    events.set(i, updated);
+                    saveAll(context, events);
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

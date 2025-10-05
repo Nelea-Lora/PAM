@@ -12,22 +12,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.hearingsupport.R;
 import com.example.hearingsupport.ui.calendar.EventsXmlStore;
 import com.example.hearingsupport.ui.calendar.Event;
+import com.google.android.material.textfield.TextInputEditText;
 
+import java.time.LocalDate;
 import java.util.Calendar;
+
+
 public class UpdateEventActivity extends AppCompatActivity {
 
     public static final String EXTRA_EVENT_ID = "extra_event_id";
 
     private DatePicker datePicker;
-    private EditText etTitle, etInfo;
+    private TextInputEditText etTitle, etInfo;
     private Button btnSave, btnCancel;
 
-    private Event event; // текущая модель
+    private Event event; // редактируемое событие
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_update_event); // твой layout из сообщения
+        setContentView(R.layout.activity_calendar_update);
 
         datePicker = findViewById(R.id.datePicker);
         etTitle    = findViewById(R.id.etTitle);
@@ -35,6 +39,7 @@ public class UpdateEventActivity extends AppCompatActivity {
         btnSave    = findViewById(R.id.btnSave);
         btnCancel  = findViewById(R.id.btnCancel);
 
+        // Получаем ID из интента
         String eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
         if (eventId == null || eventId.isEmpty()) {
             Toast.makeText(this, "Нет ID события", Toast.LENGTH_SHORT).show();
@@ -42,54 +47,53 @@ public class UpdateEventActivity extends AppCompatActivity {
             return;
         }
 
-//        // 1) Загрузить событие по ID
-//        event = EventsXmlStore.getById(this, eventId);
-//        if (event == null) {
-//            Toast.makeText(this, "Событие не найдено", Toast.LENGTH_SHORT).show();
-//            finish();
-//            return;
-//        }
-//
-//        // 2) Предзаполнить UI
-//        // дата
-//        Calendar cal = Calendar.getInstance();
-//        cal.set(event.getDate().getYear(), event.getDate().getMonthValue() - 1, event.getDate().getDayOfMonth());
-//        datePicker.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-//
-//        // текстовые поля
-//        etTitle.setText(event.getTitle());
-//        etInfo.setText(event.getInfo() == null ? "" : event.getInfo());
-//
-//        // 3) Кнопки
-//        btnCancel.setOnClickListener(v -> finish());
-//
-//        btnSave.setOnClickListener(v -> {
-//            // валидация
-//            String title = etTitle.getText().toString().trim();
-//            if (title.isEmpty()) {
-//                Toast.makeText(this, "Тема обязательна", Toast.LENGTH_SHORT).show();
-//                return;
-//            }
-//
-//            // собрать новые значения
-//            int y = datePicker.getYear();
-//            int m = datePicker.getMonth(); // 0-based
-//            int d = datePicker.getDayOfMonth();
-//
-//            // обновить модель
-//            event.setDate(java.time.LocalDate.of(y, m + 1, d));
-//            event.setTitle(title);
-//            String info = etInfo.getText().toString().trim();
-//            event.setInfo(info.isEmpty() ? null : info);
-//
-//            // сохранить
-//            boolean ok = EventsXmlStore.update(this, event);
-//            if (ok) {
-//                Toast.makeText(this, "Сохранено", Toast.LENGTH_SHORT).show();
-//                finish();
-//            } else {
-//                Toast.makeText(this, "Не удалось сохранить", Toast.LENGTH_SHORT).show();
-//            }
-//        });
+        // Загружаем событие
+        event = EventsXmlStore.getById(this, eventId);
+        if (event == null) {
+            Toast.makeText(this, "Событие не найдено", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Предзаполняем UI
+        Calendar cal = Calendar.getInstance();
+        cal.set(event.getDate().getYear(),
+                event.getDate().getMonthValue() - 1,
+                event.getDate().getDayOfMonth());
+        datePicker.updateDate(cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH));
+
+        etTitle.setText(event.getTitle());
+        etInfo.setText(event.getInfo() == null ? "" : event.getInfo());
+
+        // Кнопка "Выйти"
+        btnCancel.setOnClickListener(v -> finish());
+
+        // Кнопка "Подтвердить"
+        btnSave.setOnClickListener(v -> {
+            String title = etTitle.getText() == null ? "" : etTitle.getText().toString().trim();
+            if (title.isEmpty()) {
+                Toast.makeText(this, "Тема обязательна", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int y = datePicker.getYear();
+            int m = datePicker.getMonth(); // 0-based
+            int d = datePicker.getDayOfMonth();
+
+            event.setDate(LocalDate.of(y, m + 1, d));
+            event.setTitle(title);
+            String info = etInfo.getText() == null ? "" : etInfo.getText().toString().trim();
+            event.setInfo(info.isEmpty() ? null : info);
+
+            boolean ok = EventsXmlStore.update(this, event);
+            if (ok) {
+                Toast.makeText(this, "Сохранено", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Ошибка сохранения", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
