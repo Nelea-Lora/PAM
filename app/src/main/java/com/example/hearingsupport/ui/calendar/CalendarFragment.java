@@ -41,6 +41,7 @@ public class CalendarFragment extends Fragment {
     private ArrayAdapter<String> eventsAdapter;
     private List<Event> dayEvents = new ArrayList<>();
     private int selectedEventPos = ListView.INVALID_POSITION;
+    private EditText etSearch;
 
 
 //    public CalendarFragment() {
@@ -89,6 +90,7 @@ public class CalendarFragment extends Fragment {
         listEvents.setOnItemClickListener((parent, view1, position, id) -> {
             selectedEventPos = position;
         });
+        etSearch = view.findViewById(R.id.etSearch);
 
 
         calendarView.setDayBinder(new MonthDayBinder<DayViewContainer>() {
@@ -193,6 +195,20 @@ public class CalendarFragment extends Fragment {
                     .setNegativeButton("Отмена", null)
                     .show();
         });
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().toLowerCase(Locale.getDefault());
+                filterEvents(query);
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+
     }
     // Вспомогательный контейнер для заголовка месяца
     public static class MonthHeaderContainer extends com.kizitonwose.calendar.view.ViewContainer {
@@ -224,12 +240,37 @@ public class CalendarFragment extends Fragment {
         listEvents.requestLayout();
 
         selectedEventPos = ListView.INVALID_POSITION;
+        String currentQuery = etSearch.getText().toString();
+        if (!currentQuery.isEmpty()) {
+            filterEvents(currentQuery);
+        }
+
     }
+    private void filterEvents(String query) {
+        List<String> filteredTitles = new ArrayList<>();
+
+        for (Event e : dayEvents) {
+            if (e.getTitle().toLowerCase(Locale.getDefault()).contains(query)) {
+                String info = (e.getInfo() != null && !e.getInfo().isEmpty()) ? " — " + e.getInfo() : "";
+                filteredTitles.add(e.getTitle() + info);
+            }
+        }
+
+        eventsAdapter.clear();
+        eventsAdapter.addAll(filteredTitles);
+        eventsAdapter.notifyDataSetChanged();
+        listEvents.clearChoices();
+        listEvents.requestLayout();
+        selectedEventPos = ListView.INVALID_POSITION;
+    }
+
 
     @Override
     public void onResume() {
         super.onResume();
-        reloadEventsFor(selectedDate);
+
+        requireActivity().getWindow()
+                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
 }

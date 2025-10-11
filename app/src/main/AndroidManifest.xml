@@ -34,8 +34,10 @@
             android:name=".NotificationReceiver"
             android:exported="false" />
         <activity android:name=".ui.calendar.AddEventActivity"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
         <activity android:name=".ui.calendar.UpdateEventActivity"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"/>
     </application>
 

@@ -1,7 +1,10 @@
 package com.example.hearingsupport.ui.calendar;
 
 
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -9,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
+
 import com.example.hearingsupport.R;
 
 import java.time.LocalDate;
@@ -63,5 +68,25 @@ public class AddEventActivity extends AppCompatActivity {
                 Toast.makeText(this, "Ошибка сохранения", Toast.LENGTH_SHORT).show();
             }
         });
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        NestedScrollView scroll = findViewById(R.id.scrollContainer);
+        View root = scroll.getChildAt(0);
+        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            Rect r = new Rect();
+            root.getWindowVisibleDisplayFrame(r);
+            int screenHeight = root.getRootView().getHeight();
+            int keypadHeight = screenHeight - r.bottom;
+
+            // если клавиатура открыта, прокручиваем к активному полю
+            if (keypadHeight > screenHeight * 0.15) {
+                View currentFocus = getCurrentFocus();
+                if (currentFocus != null) {
+                    scroll.post(() -> scroll.scrollTo(0, currentFocus.getBottom()));
+                }
+            }
+        });
+
     }
 }

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
     tools:context=".ui.calendar.CalendarFragment">
 
+    <!-- ✅ Один ребёнок: LinearLayout -->
     <LinearLayout
         android:orientation="vertical"
         android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <!-- Календарь -->
         <com.kizitonwose.calendar.view.CalendarView
@@ -21,20 +24,32 @@
             app:cv_dayViewResource="@layout/item_calendar_day"
             app:cv_monthHeaderResource="@layout/item_month_header" />
 
-        <!-- Список событий для выбранной даты -->
+        <!-- Поле поиска -->
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Поиск по теме..."
+            android:inputType="text"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:padding="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Список событий -->
         <ListView
             android:id="@+id/listEvents"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:choiceMode="singleChoice" />
 
-        <!-- Кнопки управления -->
+        <!-- Кнопки -->
         <LinearLayout
             android:orientation="horizontal"
             android:gravity="end"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
             <Button
                 android:id="@+id/btnAdd"
@@ -58,5 +73,4 @@
         </LinearLayout>
 
     </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
